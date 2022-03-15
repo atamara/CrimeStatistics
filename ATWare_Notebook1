@@ -16,12 +16,14 @@ names(HateCrime1)[4] <- 'RaceEthnAnc'
 names(HateCrime1)[6] <- 'SexualOrientation'
 names(HateCrime1)[9] <- 'GenderID'
 
-HateCrime1$RaceEthnAnc <- as.integer(HateCrime1$RaceEthnAnc)
+HateCrime1$TotalCrimes <- HateCrime1$RaceEthnAnc + HateCrime1$Religion + HateCrime1$SexualOrientation + HateCrime1$Disability + HateCrime1$Gender + HateCrime1$GenderID
 
-HateCrime1$TotalCrimes <- rbind(sum(as.integer(HateCrime1$RaceEthnAnc, HateCrime1$Religion, HateCrime1$SexualOrientation, HateCrime1$Disability, HateCrime1$Gender, HateCrime1$GenderID)))
+# incorrect code: HateCrime1$RaceEthnAnc <- as.integer(HateCrime1$RaceEthnAnc)
 
-hc <- c("RaceEthnAnc"+"Religion"+"SexualOrientation"+"Disability"+"Gender"+"GenderID")
-HC2$TotalCrimes <- HateCrime1[hc]
+# incorrect code: HateCrime1$TotalCrimes <- rbind(sum(as.integer(HateCrime1$RaceEthnAnc, HateCrime1$Religion, HateCrime1$SexualOrientation, HateCrime1$Disability, HateCrime1$Gender, HateCrime1$GenderID)))
+
+# incorrect code: hc <- c("RaceEthnAnc"+"Religion"+"SexualOrientation"+"Disability"+"Gender"+"GenderID")
+# incorrect code: HC2$TotalCrimes <- HateCrime1[hc]
 
 HCTotals <- HateCrime1 %>% group_by(State) %>% summarize(Totals = sum(RaceEthnAnc, Religion, SexualOrientation, Disability, Gender, GenderID))
 print(HCTotals)
