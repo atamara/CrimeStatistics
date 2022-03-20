@@ -104,3 +104,6 @@ summary(HCLinReg)
 #
 # Unfortunately, this does not account for the number of hate crimes that may
 # go unreported.
+
+# Formatting cleaned data set to be exported as CSV:
+write.csv(HateCrime1, file = "GitHub/HateCrime_PopSize.csv")
