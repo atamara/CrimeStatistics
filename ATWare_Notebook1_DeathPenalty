@@ -168,3 +168,6 @@ print(CrimePopSum)
 # in Non-Death Penalty/Moratorium states as opposed to Death Penalty states.
 # Non-Death Penalty/Moratorium states on average had more than double the
 # number of hate crimes as Death Penalty states in 2019.
+
+# Formatting cleaned data set to be exported as CSV:
+write.csv(HCTotals, file = "GitHub/HateCrime_DeathPenalty.csv")
