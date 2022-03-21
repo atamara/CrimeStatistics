@@ -72,13 +72,9 @@ View(HCTypes)
 # Again, Spearman Method is used because the Population variable does not have 
 # a naturally-occurring Normal Distribution.
 chart.Correlation(HCTypes, histogram=FALSE, method="spearman")
-# Results: Lower-population areas have higher correlations with hate crimes
-# motivated by Religion, Gender, and Gender Identification, but also lower
-# correlations with those motivated by Race/Ethnicity/Ancestry and Disability.
-# Higher-population areas have the highest correlations with those motivated by
-# Race/Ethnicity/Ancestry, Sexual Orientation, and Religion, but lower 
-# correlations with Gender and Disability. 
-# Mid-size population areas seem to be a combination of both. 
+# High population areas show a strong correlation with hate crimes motivated by
+# Religion; moderate correlations with Race/Ethn./Anc., Sexual Orientation,
+# and Gender Identification; and weak correlations with Disability and Gender.
 
 # These results may also be presented in a Correlation Matrix Table.
 HCTypesTable <- cor(HCTypes)
