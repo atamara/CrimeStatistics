@@ -2,172 +2,146 @@ library("dplyr")
 library("rcompanion")
 library("car")
 library("IDPmisc")
-library(readr)
+library("readr")
 
-install.packages("rcompanion")
-install.packages("dplyr")
-install.packages("car")
-install.packages("IDPmisc")
+HateCrime01 <- read_csv("GitHub/HateCrimeNoNA.csv")
+View(HateCrime01)
 
-HateCrime1 <- read_csv("GitHub/HateCrime1.csv")
-View(HateCrime1)
+HateCrime01 <- HateCrime01[,-1]
+HateCrime01 <- NaRV.omit(HateCrime01)
 
-names(HateCrime1)[4] <- 'RaceEthnAnc'
-names(HateCrime1)[6] <- 'SexualOrientation'
-names(HateCrime1)[9] <- 'GenderID'
+HateCrime01$TotalCrimes <- HateCrime01$RaceEthnAnc + HateCrime01$Religion + HateCrime01$SexualOrientation + HateCrime01$Disability + HateCrime01$Gender + HateCrime01$GenderID
 
-HateCrime1$TotalCrimes <- HateCrime1$RaceEthnAnc + HateCrime1$Religion + HateCrime1$SexualOrientation + HateCrime1$Disability + HateCrime1$Gender + HateCrime1$GenderID
+HCTotals01 <- HateCrime01 %>% group_by(State) %>% summarize(Totals = sum(RaceEthnAnc, Religion, SexualOrientation, Disability, Gender, GenderID))
+View(HCTotals01)
 
-HCTotals <- HateCrime1 %>% group_by(State) %>% summarize(Totals = sum(RaceEthnAnc, Religion, SexualOrientation, Disability, Gender, GenderID))
-View(HCTotals)
-
-HCTotals$StateR <- NA
-HCTotals$StateR[HCTotals$State == "Arizona"] <- 1
-HCTotals$StateR[HCTotals$State == "Arkansas"] <- 1
-HCTotals$StateR[HCTotals$State == "Florida"] <- 1  
-HCTotals$StateR[HCTotals$State == "Georgia"] <- 1 
-HCTotals$StateR[HCTotals$State == "Idaho"] <- 1 
-HCTotals$StateR[HCTotals$State == "Indiana"] <- 1 
-HCTotals$StateR[HCTotals$State == "Kansas"] <- 1
-HCTotals$StateR[HCTotals$State == "Kentucky"] <- 1
-HCTotals$StateR[HCTotals$State == "Louisiana"] <- 1
-HCTotals$StateR[HCTotals$State == "Mississippi"] <- 1
-HCTotals$StateR[HCTotals$State == "Missouri"] <- 1
-HCTotals$StateR[HCTotals$State == "Montana"] <- 1
-HCTotals$StateR[HCTotals$State == "Nebraska"] <- 1
-HCTotals$StateR[HCTotals$State == "Nevada"] <- 1
-HCTotals$StateR[HCTotals$State == "North Carolina"] <- 1 
-HCTotals$StateR[HCTotals$State == "Ohio"] <- 1
-HCTotals$StateR[HCTotals$State == "Oklahoma"] <- 1 
-HCTotals$StateR[HCTotals$State == "South Carolina"] <- 1 
-HCTotals$StateR[HCTotals$State == "South Dakota"] <- 1
-HCTotals$StateR[HCTotals$State == "Tennessee"] <- 1
-HCTotals$StateR[HCTotals$State == "Texas"] <- 1
-HCTotals$StateR[HCTotals$State == "Utah"] <- 1
-HCTotals$StateR[HCTotals$State == "Wyoming"] <- 1
+HCTotals01$StateR <- NA
+HCTotals01$StateR[HCTotals01$State == "Arizona"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Arkansas"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Florida"] <- 1  
+HCTotals01$StateR[HCTotals01$State == "Georgia"] <- 1 
+HCTotals01$StateR[HCTotals01$State == "Idaho"] <- 1 
+HCTotals01$StateR[HCTotals01$State == "Indiana"] <- 1 
+HCTotals01$StateR[HCTotals01$State == "Kansas"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Kentucky"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Louisiana"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Mississippi"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Missouri"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Montana"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Nebraska"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Nevada"] <- 1
+HCTotals01$StateR[HCTotals01$State == "North Carolina"] <- 1 
+HCTotals01$StateR[HCTotals01$State == "Ohio"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Oklahoma"] <- 1 
+HCTotals01$StateR[HCTotals01$State == "South Carolina"] <- 1 
+HCTotals01$StateR[HCTotals01$State == "South Dakota"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Tennessee"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Texas"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Utah"] <- 1
+HCTotals01$StateR[HCTotals01$State == "Wyoming"] <- 1
 
 
-HCTotals$StateR[HCTotals$State == "Delaware"] <- 0 
-HCTotals$StateR[HCTotals$State == "New Mexico"] <- 0
-HCTotals$StateR[HCTotals$State =="New York"] <- 0 
-HCTotals$StateR[HCTotals$State =="Rhode Island"] <- 0
-HCTotals$StateR[HCTotals$State =="Washington"] <- 0
-HCTotals$StateR[HCTotals$State =="Alaska"] <- 0 
-HCTotals$StateR[HCTotals$State =="Colorado"] <- 0
-HCTotals$StateR[HCTotals$State =="Connecticut"] <- 0
-HCTotals$StateR[HCTotals$State =="Delaware"] <- 0 
-HCTotals$StateR[HCTotals$State =="Hawaii"] <- 0
-HCTotals$StateR[HCTotals$State =="Illinois"] <- 0
-HCTotals$StateR[HCTotals$State =="Iowa"] <- 0
-HCTotals$StateR[HCTotals$State =="Maine"] <- 0
-HCTotals$StateR[HCTotals$State =="Maryland"] <- 0
-HCTotals$StateR[HCTotals$State =="Massachusetts"] <- 0 
-HCTotals$StateR[HCTotals$State =="Michigan"] <- 0
-HCTotals$StateR[HCTotals$State =="Minnesota"] <- 0
-HCTotals$StateR[HCTotals$State =="New Hampshire"] <- 0
-HCTotals$StateR[HCTotals$State =="New Jersey"] <- 0
-HCTotals$StateR[HCTotals$State =="New Mexico"] <- 0 
-HCTotals$StateR[HCTotals$State =="New York"] <- 0
-HCTotals$StateR[HCTotals$State =="North Dakota"] <- 0
-HCTotals$StateR[HCTotals$State =="Rhode Island"] <- 0
-HCTotals$StateR[HCTotals$State =="Vermont"] <- 0
-HCTotals$StateR[HCTotals$State =="Virginia"] <- 0
-HCTotals$StateR[HCTotals$State =="Washington"] <- 0
-HCTotals$StateR[HCTotals$State =="West Virginia"] <- 0
-HCTotals$StateR[HCTotals$State =="Wisconsin"] <- 0
-HCTotals$StateR[HCTotals$State =="California"] <- 0
-HCTotals$StateR[HCTotals$State =="Oregon"] <- 0
-HCTotals$StateR[HCTotals$State =="Pennsylvania"] <- 0
-HCTotals$StateR[HCTotals$State =="District of Columbia"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Delaware"] <- 0 
+HCTotals01$StateR[HCTotals01$State == "New Mexico"] <- 0
+HCTotals01$StateR[HCTotals01$State == "New York"] <- 0 
+HCTotals01$StateR[HCTotals01$State == "Rhode Island"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Washington"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Alaska"] <- 0 
+HCTotals01$StateR[HCTotals01$State == "Colorado"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Connecticut"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Delaware"] <- 0 
+HCTotals01$StateR[HCTotals01$State == "Hawaii"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Illinois"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Iowa"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Maine"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Maryland"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Massachusetts"] <- 0 
+HCTotals01$StateR[HCTotals01$State == "Michigan"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Minnesota"] <- 0
+HCTotals01$StateR[HCTotals01$State == "New Hampshire"] <- 0
+HCTotals01$StateR[HCTotals01$State == "New Jersey"] <- 0
+HCTotals01$StateR[HCTotals01$State == "New Mexico"] <- 0 
+HCTotals01$StateR[HCTotals01$State == "New York"] <- 0
+HCTotals01$StateR[HCTotals01$State == "North Dakota"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Rhode Island"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Vermont"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Virginia"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Washington"] <- 0
+HCTotals01$StateR[HCTotals01$State == "West Virginia"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Wisconsin"] <- 0
+HCTotals01$StateR[HCTotals01$State == "California"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Oregon"] <- 0
+HCTotals01$StateR[HCTotals01$State == "Pennsylvania"] <- 0
+HCTotals01$StateR[HCTotals01$State == "District of Columbia"] <- 0
 
-HCTotals <- NaRV.omit(HCTotals)
+# Federal crimes must be removed, because that could include crimes committed
+# across state lines, and cause overlap.
+HCTotals01 <- HCTotals01[-9,]
 
 # Independent t-Test
 #  Test for Homogeneity of Variance
-bartlett.test(Totals ~ StateR, data = HCTotals)
-fligner.test(Totals ~ StateR, data = HCTotals)
-#  Met assumption for Fligner's Test with p-value at 0.4949
-HC_ind <- t.test(HCTotals$Totals, HCTotals$StateR, alternative="two.sided", var.equal=TRUE)
-print(HC_ind)
-# p-value of 4.055e-06 is significantly < .05 , showing there is a significant
+bartlett.test(Totals ~ StateR, data = HCTotals01)
+fligner.test(Totals ~ StateR, data = HCTotals01)
+#  Met assumption for Fligner's Test with p-value at 0.1647 .
+HC_ind01 <- t.test(HCTotals01$Totals, HCTotals01$StateR, alternative="two.sided", var.equal=TRUE)
+print(HC_ind01)
+# p-value of 1.987e-06 is significantly < .05 , showing there is a significant
 # difference in hate crimes committed in Death Penalty states as opposed to
 # Non-Death Penalty/Moratorium-Imposed states.
 
-HCTotals0 <- HCTotals %>% group_by(StateR) %>% summarize(Totals = sum(Totals))
-print(HCTotals0)
-
-# Analysis of Means show there are almost twice as many hate crimes committed
-# in Non-Death Penalty/Moratorium states as opposed to Death Penalty states. 
+# Analysis of Means:
+HCTotals001 <- HCTotals01 %>% group_by(StateR) %>% summarize(Totals = sum(Totals))
+print(HCTotals001)
+HCTotals0001 <- HCTotals01 %>% group_by(StateR) %>% summarize(Totals = mean(Totals))
+print(HCTotals0001)
+# Results:
+# Non-Death Penalty States: Mean of 187 Hate Crimes committed in 2019.
+# Death Penalty States: Mean of 101 Hate Crimes committed in 2019.
+# Analysis of Means shows there are nearly twice as many hate crimes committed
+# in Non-Death Penalty/Moratorium-Imposed states as opposed to Death Penalty 
+# states in 2019.
 
 # In order for the analysis to be fair, however, population must be added as
-# a factor.
+# a variable.
 
-HCPop <- (na.omit(HateCrime1 %>% group_by(State) %>% summarize(TotalPop = sum(Population))))
-View(HCPop)
+HCPop01 <- (na.omit(HateCrime01 %>% group_by(State) %>% summarize(Population = sum(Population))))
+View(HCPop01)
+HCPop01 <- HCPop01[-9,]
 
-# Unfortunately, nearly all of the population fields in the data set
-# show up as NA. Therefore, it was necessary to supplement this data set with
-# the official US Census population estimates for 2019.
+HCTotals01$Population <- HCPop01$Population
 
-StatePops2019 <- read_csv("GitHub/StatePops2019.csv")
-
-# The first row of string data needs to be omitted.
-
-StatePop2019 <- StatePops2019[-1,]
-View(StatePop2019)
-
-# The 2019 population estimates occur in every 12th row, so rows had to be
-# selected accordingly.
-
-SP2019 <- StatePop2019[c(24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420, 432, 444, 456, 468, 480, 492, 504, 516, 528, 540, 552, 564, 576, 588, 600, 612),]
-View(SP2019)
-
-# The row for New Jersey also needs to be removed because NJ population data is
-# NA in the original data set.
-
-SP2019 <- SP2019[-30,]
-View(SP2019)
-
-pop <- c("NAME", "POP")
-SPOP2019 <- SP2019[pop]
-View(SPOP2019)
-
-names(SPOP2019)[1] <- 'State'
-
-SPOP2019$CrimePop <- NA
-
-HCTotals$Pop <- SPOP2019$POP
-
-HCTotals$Pop <- as.numeric(HCTotals$Pop)
-HCTotals$CrimesPerPop <- HCTotals$Totals / HCTotals$Pop
+HCTotals01$CrimesPerPop <- HCTotals01$Totals / HCTotals01$Population
 
 # The 'Crimes per Population' variable must be formatted to 
 # 'Crimes per Population times 100,000' to make the number more manageable.
 
-HCTotals$CrimesPerPop100k <- HCTotals$CrimesPerPop * 100000
+HCTotals01$CrimesPerPop100k <- HCTotals01$CrimesPerPop * 100000
 
 # Analysis : Independent t-Test
 #  Testing Assumptions
 #  Test for Homogeneity of Variance
-bartlett.test(CrimesPerPop100k ~ StateR, data = HCTotals)
-fligner.test(CrimesPerPop100k ~ StateR, data = HCTotals)
-#  Met assumption for Fligner's Test with p-value at 0.07092
-HCrime_ind <- t.test(HCTotals$CrimesPerPop100k, HCTotals$StateR, alternative="two.sided", var.equal=TRUE)
-print(HCrime_ind)
-# p-value at 0.0008876 is < .05 , showing there is a strongly significant
-# difference in hate crimes committed in Death Penalty states as opposed to
-# Non-Death Penalty/Moratorium-Imposed states.
+bartlett.test(CrimesPerPop100k ~ StateR, data = HCTotals01)
+fligner.test(CrimesPerPop100k ~ StateR, data = HCTotals01)
+#  Met assumption for Fligner's Test with p-value at 0.06071 .
 
-CrimePopSum <- HCTotals %>% group_by(StateR) %>% summarize(Totals = sum(CrimesPerPop100k))
-print(CrimePopSum)
+HC_ind02 <- t.test(HCTotals01$CrimesPerPop100k, HCTotals01$StateR, alternative="two.sided", var.equal=TRUE)
+print(HC_ind02)
+# p-value at 2.811e-11 is very much < .05 , showing there is a strongly 
+# significant difference in hate crimes committed in Death Penalty states as 
+# opposed to Non-Death Penalty/Moratorium-Imposed states in 2019, even with 
+# population taken into consideration.
 
-# 94.1 / 26 = 3.62
-# 36.7 / 23 = 1.6
-
-# Analysis of Means show there are almost twice as many hate crimes committed
-# in Non-Death Penalty/Moratorium states as opposed to Death Penalty states.
-# Non-Death Penalty/Moratorium states on average had more than double the
-# number of hate crimes as Death Penalty states in 2019.
+# Analysis of Means:
+CrimePopSum01 <- HCTotals01 %>% group_by(StateR) %>% summarize(Totals = sum(CrimesPerPop100k))
+print(CrimePopSum01)
+CrimePopSum001 <- HCTotals01 %>% group_by(StateR) %>% summarize(Totals = mean(CrimesPerPop100k))
+print(CrimePopSum001)
+# Results:
+# Non-Death Penalty States: Mean of 6.00 Hate Crimes per Population times 100000.
+# Death Penalty States: Mean of 3.67 Hate Crimes per Population times 100000.
+# Analysis of Means shows there are nearly twice as many hate crimes committed
+# in Non-Death Penalty/Moratorium states as opposed to Death Penalty states,
+# even with population taken into consideration.
 
 # Formatting cleaned data set to be exported as CSV:
-write.csv(HCTotals, file = "GitHub/HateCrime_DeathPenalty.csv")
+write.csv(HCTotals01, file = "GitHub/HateCrime_DeathPenalty01.csv")
