@@ -7,99 +7,99 @@ library("PerformanceAnalytics")
 library("corrplot")
 library("readr")
 
-HateCrime1 <- read_csv("GitHub/HateCrime1.csv")
-View(HateCrime1)
+HateCrime02 <- read_csv("GitHub/HateCrimeNoNA.csv")
+View(HateCrime02)
 
-names(HateCrime1)[2] <- 'AgencyType'
-names(HateCrime1)[4] <- 'RaceEthnAnc'
-names(HateCrime1)[6] <- 'SexualOrientation'
-names(HateCrime1)[9] <- 'GenderID'
-names(HateCrime1)[10] <- 'Q1'
-names(HateCrime1)[11] <- 'Q2'
-names(HateCrime1)[12] <- 'Q3'
-names(HateCrime1)[13] <- 'Q4'
+HateCrime02 <- HateCrime02[,-1]
+HateCrime02 <- NaRV.omit(HateCrime02)
 
-HateCrime1$TotalCrimes <- HateCrime1$RaceEthnAnc + HateCrime1$Religion + HateCrime1$SexualOrientation + HateCrime1$Disability + HateCrime1$Gender + HateCrime1$GenderID
+# Federal crimes must be removed, because that could include crimes committed
+# across state lines, and cause overlap.
+HateCrime02 <- HateCrime02[-2120:-2167,]
 
-HateCrime1 <- NaRV.omit(HateCrime1)
+HateCrime02$TotalCrimes <- HateCrime02$RaceEthnAnc + HateCrime02$Religion + HateCrime02$SexualOrientation + HateCrime02$Disability + HateCrime02$Gender + HateCrime02$GenderID
 
-HCplot <- ggplot(HateCrime1, aes(x = Population, y = TotalCrimes)) + geom_point() + geom_smooth(method=lm)
-show(HCplot)
+HateCrime02 <- NaRV.omit(HateCrime02)
+
+HCplot01 <- ggplot(HateCrime02, aes(x = Population, y = TotalCrimes)) + geom_point() + geom_smooth(method=lm)
+show(HCplot01)
 
 # Initial scatter plot shows an extremely high correlation between 
 # increased population and increased total hate crimes.
 
 # Correlation Test - Calculating Correlation Values
 #  First, test Assumption of Normality on both continuous variables.
-plotNormalHistogram(HateCrime1$Population)
+plotNormalHistogram(HateCrime02$Population)
 # Population variable is extremely positively skewed - not Normal.
-plotNormalHistogram(HateCrime1$TotalCrimes)
+plotNormalHistogram(HateCrime02$TotalCrimes)
 # Total Crimes variable is also extremely positively skewed - not Normal.
-# Proceed with Spearman's Rho Correlation Test.
-cor.test(HateCrime1$TotalCrimes, HateCrime1$Population, method="spearman", use = "complete.obs")
+# Proceed with Spearman's Rho Correlation Test for Non-Normal data.
+cor.test(HateCrime02$TotalCrimes, HateCrime02$Population, method="spearman", use = "complete.obs")
 # Results: p-value of < 2.2e-16 indicates correlation is extremely significant.
-# Rho Coefficient at 0.4705715 indicates moderate correlation.
+# Rho Coefficient at 0.3390968 indicates moderate positive correlation.
 
 # Alternatively, if a Pearson's Test were to be run, the variables would have
 # to be transformed to Normal Distributions.
 # Population Variable:
-plotNormalHistogram(HateCrime1$Population)
+plotNormalHistogram(HateCrime02$Population)
 # Extremely positively skewed variable must be transformed.
-plotNormalHistogram(sqrt(HateCrime1$Population))
-plotNormalHistogram(log(HateCrime1$Population))
-plotNormalHistogram(transformTukey(HateCrime1$Population))
+plotNormalHistogram(sqrt(HateCrime02$Population))
+plotNormalHistogram(log(HateCrime02$Population))
+plotNormalHistogram(transformTukey(HateCrime02$Population))
 # Tukey's shows most Normal Distribution - creating transformed variable.
-HateCrime1$PopulationT <- transformTukey(HateCrime1$Population)
+HateCrime02$PopulationT <- transformTukey(HateCrime02$Population)
 # Total Crimes Variable:
-plotNormalHistogram(HateCrime1$TotalCrimes)
+plotNormalHistogram(HateCrime02$TotalCrimes)
 # Extremely positively skewed variable must be transformed.
-plotNormalHistogram(sqrt(HateCrime1$TotalCrimes))
-plotNormalHistogram(log2(HateCrime1$TotalCrimes))
-plotNormalHistogram(transformTukey(HateCrime1$TotalCrimes))
+plotNormalHistogram(sqrt(HateCrime02$TotalCrimes))
+plotNormalHistogram(log(HateCrime02$TotalCrimes))
+plotNormalHistogram(log2(HateCrime02$TotalCrimes))
+plotNormalHistogram(transformTukey(HateCrime02$TotalCrimes))
 # Tukey's shows most Normal Distribution - creating transformed variable.
-HateCrime1$TotalCrimesT <- transformTukey(HateCrime1$TotalCrimes)
+HateCrime02$TotalCrimesT <- transformTukey(HateCrime02$TotalCrimes)
 # Proceed with Pearson's Correlation Test.
-cor.test(HateCrime1$TotalCrimes, HateCrime1$Population, method="pearson", use = "complete.obs")
+cor.test(HateCrime02$TotalCrimesT, HateCrime02$PopulationT, method="pearson", use = "complete.obs")
 # Results: p-value of < 2.2e-16 indicates correlation is extremely significant.
-# Correlation Coefficient at 0.7686454 indicates strong correlation.
+# Correlation Coefficient at 0.412559 indicates moderate positive correlation.
 # Therefore, if both variables are adjusted to Normal Distributions, there is
-# indeed a strong positive correlation between high population and high
-# occurrence of hate crimes. 
+# still a moderate positive correlation between high population and high
+# occurrence of hate crimes.
 
 # Correlation Matrices - Assessing Different Types of Hate Crimes
-HCTypes <- HateCrime1[, c(4,5,6,7,8,9,14)]
-View(HCTypes)
+HCTypes0 <- HateCrime02[, c(5,6,7,8,9,10,15)]
+View(HCTypes0)
 # Again, Spearman Method is used because the Population variable does not have 
 # a naturally-occurring Normal Distribution.
-chart.Correlation(HCTypes, histogram=FALSE, method="spearman")
-# High population areas show a strong correlation with hate crimes motivated by
-# Religion; moderate correlations with Race/Ethn./Anc., Sexual Orientation,
-# and Gender Identification; and weak correlations with Disability and Gender.
-
+chart.Correlation(HCTypes0, histogram=FALSE, method="spearman")
 # These results may also be presented in a Correlation Matrix Table.
-HCTypesTable <- cor(HCTypes)
-View(HCTypesTable)
+HCTypesTable0 <- cor(HCTypes0)
+View(HCTypesTable0)
+# Results:
+# # High population areas show a strong correlation with hate crimes motivated by
+# Religion, with the highest coefficient at 0.82545736; moderate correlations with
+# Sexual Orientation, Race/Ethnicity/Ancestry, and Gender Identification; a weak 
+# correlation with Disability; and no correlation with Gender.
 
 # Computing Linear Regression
-HCLinReg <- lm(TotalCrimes ~ Population, HateCrime1)
-print(HCLinReg)
-# In this case, y = 0.00004699x + 0.2334
+HCLinReg0 <- lm(TotalCrimes ~ Population, HateCrime02)
+print(HCLinReg0)
+# In this case, y = 0.0000469x - 0.1153296
 # Summarizing Calculation:
-summary(HCLinReg)
+summary(HCLinReg0)
 # Results: p-value at < 2.2e-16 shows extremely high significance.
-# Adjusted R-squared value is 0.5905 , which means Population can explain  
-# 59.05% of the factors that contribute to occurrence of hate crimes. Therefore,
+# Adjusted R-squared value is 0.0.5801 , which means Population can explain  
+# 58.01% of the factors that contribute to occurrence of hate crimes. Therefore,
 # population and hate crime occurrence are fairly closely related.
 
 # Making Predictions:
 # If, for example, one wanted to predict the number of hate crimes that would
 # likely occur in a city of 200,000 people, based on data from 2019, the 
 # equation would work as follows:
-# y = 0.00004699(200000) + 0.2334 , which equals: 
-# 9.6314 -- i.e., 9 total hate crimes.
-#
+# y = 0.0000469(200000) - 0.1153296 , which equals: 
+# 9.2646704 -- i.e., 9 total hate crimes.
+
 # Unfortunately, this does not account for the number of hate crimes that may
 # go unreported.
 
 # Formatting cleaned data set to be exported as CSV:
-write.csv(HateCrime1, file = "GitHub/HateCrime_PopSize.csv")
+write.csv(HateCrime02, file = "GitHub/HateCrime_PopulationSize.csv")
