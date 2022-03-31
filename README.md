@@ -1,2 +1,2 @@
 # FinalProject
-GitHubIcon7.png
+FinalProject/Media Files/GitHubIcon7.png
