@@ -1,0 +1,578 @@
+library("dplyr")
+library("rcompanion")
+library("car")
+library("effects")
+library("multcomp")
+library("IDPmisc")
+library("PerformanceAnalytics")
+library("ggplot2")
+library("corrplot")
+library("readr")
+
+HateCrimeRed <- read_csv("GitHub/HateCrimeNoNA.csv")
+View(HateCrimeRed)
+
+HateCrimeRed <- HateCrimeRed[,-1:-2]
+HateCrimeRed <- NaRV.omit(HateCrimeRed)
+
+HateCrimeRed$TotalCrimes <- HateCrimeRed$RaceEthnAnc + HateCrimeRed$Religion + HateCrimeRed$SexualOrientation + HateCrimeRed$Disability + HateCrimeRed$Gender + HateCrimeRed$GenderID
+
+HCRedStates <- HateCrimeRed %>% group_by(State) %>% summarize(TotalCrimes = sum(RaceEthnAnc, Religion, SexualOrientation, Disability, Gender, GenderID))
+View(HCRedStates)
+
+# Source:
+# "Official 2016 Presidential General Election Results". 
+# Federal Election Commission. December 2017. Retrieved February 12, 2018. 
+# "Voting and Registration in the Election of November 2016". 
+# United States Census Bureau. May 2017. Retrieved November 10, 2017.
+
+HCRedStates$StateRed <- NA
+HCRedStates$StateRed[HCRedStates$State == "Alaska"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Arizona"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Arkansas"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Florida"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Georgia"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Idaho"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Indiana"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Iowa"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Kansas"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Kentucky"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Louisiana"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Michigan"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Mississippi"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Missouri"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Montana"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Nebraska"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "North Carolina"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "North Dakota"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Ohio"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Oklahoma"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Pennsylvania"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "South Carolina"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "South Dakota"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Tennessee"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Texas"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Utah"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "West Virginia"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Wisconsin"] <- 1
+HCRedStates$StateRed[HCRedStates$State == "Wyoming"] <- 1
+
+HCRedStates$StateRed[HCRedStates$State == "California"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Colorado"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Connecticut"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Delaware"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "District of Columbia"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Hawaii"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Illinois"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Maine"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Maryland"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Massachusetts"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Minnesota"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Nevada"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "New Hampshire"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "New Jersey"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "New Mexico"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "New York"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Oregon"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Rhode Island"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Vermont"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Virginia"] <- 0
+HCRedStates$StateRed[HCRedStates$State == "Washington"] <- 0
+
+# Removing Federal row from data set.
+HCRedStates <- HCRedStates[-9,]
+
+# Independent t-Test
+#  Test for Homogeneity of Variance
+bartlett.test(TotalCrimes ~ StateRed, data = HCRedStates)
+fligner.test(TotalCrimes ~ StateRed, data = HCRedStates)
+# Does not meet assumption for Hom. of Variance. Var.equal Argument = FALSE.
+
+HC_indRed <- t.test(HCRedStates$TotalCrimes, HCRedStates$StateRed, alternative="two.sided", var.equal=FALSE)
+print(HC_indRed)
+# p-value of 6.458e-06 is drastically < .05 , showing there is a significant
+# difference in hate crimes committed in Red States as opposed to Blue States.
+
+# Analysis of Means:
+HCRed_sum <- HCRedStates %>% group_by(StateRed) %>% summarize(TotalCrimes = sum(TotalCrimes))
+print(HCRed_sum)
+HCRed_mean <- HCRedStates %>% group_by(StateRed) %>% summarize(TotalCrimes = mean(TotalCrimes))
+print(HCRed_mean)
+# Results:
+# Blue States: Mean of 213 Hate Crimes committed in 2019.
+# Red States: Mean of 100 Hate Crimes committed in 2019.
+# Analysis of Means shows there were over twice as many hate crimes committed
+# in Blue States as opposed to Red States in 2019.
+
+# In order for the analysis to be fair, however, population proportion must be 
+# added as a variable.
+
+HCPopRed <- (HateCrimeRed %>% group_by(State) %>% summarize(Population = sum(Population)))
+View(HCPopRed)
+HCPopRed <- HCPopRed[-9,]
+
+HCRedStates$Population <- NA
+HCRedStates$Population <- HCPopRed$Population
+
+HCRedStates$CrimesPerPop <- HCRedStates$TotalCrimes / HCRedStates$Population
+
+# The 'Crimes per Population' variable must be formatted to 
+# 'Crimes per Population times 100,000' to make the number more manageable.
+
+HCRedStates$CrimesPerPop100k <- HCRedStates$CrimesPerPop * 100000
+
+# Analysis : Independent t-Test
+#  Testing Assumptions
+#  Test for Homogeneity of Variance
+bartlett.test(CrimesPerPop100k ~ StateRed, data = HCRedStates)
+fligner.test(CrimesPerPop100k ~ StateRed, data = HCRedStates)
+# Does not meet assumption for Hom. of Variance. Var.equal Argument = FALSE.
+
+HC_indRed2 <- t.test(HCRedStates$CrimesPerPop100k, HCRedStates$StateRed, alternative="two.sided", var.equal=FALSE)
+print(HC_indRed2)
+# p-value at 1.906e-09 is drastically < .05 , showing there is a strongly 
+# significant difference in hate crimes committed in Red States as opposed to 
+# Blue States in 2019, even with population taken into consideration.
+
+# Analysis of Means:
+HCRed_sum2 <- HCRedStates %>% group_by(StateRed) %>% summarize(TotalCrimes = sum(CrimesPerPop100k))
+print(HCRed_sum2)
+HCRed_mean2 <- HCRedStates %>% group_by(StateRed) %>% summarize(TotalCrimes = mean(CrimesPerPop100k))
+print(HCRed_mean2)
+# Results:
+# Blue States: Mean of 6.82 Hate Crimes per Population times 100000.
+# Red States: Mean of 3.56 Hate Crimes per Population times 100000.
+# Analysis of Means shows there are nearly twice as many hate crimes committed
+# in Blue States as opposed to Red States, even with population taken into 
+# consideration.
+# Adjusted for population, people in Blue States are 192% more likely to be  
+# involved in hate crimes than people in Red States.
+
+# Conclusion: This completely negates the common perception that Republican
+# voters are more likely to commit hate crimes than Democrat voters, and 
+# consequently disproves another incorrect popular perception that Republican 
+# voters are somehow more bigoted and/or intolerant.
+
+# Adding Death Penalty and 2nd Amendment variables for further analyses.
+HateCrime_DeathPenalty <- read_csv("GitHub/HateCrime_DeathPenalty01.csv")
+HCRedStates$StateR <- NA
+HCRedStates$StateR <- HateCrime_DeathPenalty$StateR
+names(HCRedStates)[7] <- 'DeathPen'
+HateCrime_2ndA2 <- read_csv("GitHub/HateCrime_2ndA2.csv")
+HCRedStates$State2A <- NA
+HCRedStates$PercentGO <- NA
+HCRedStates$State2A <- HateCrime_2ndA2$State2A
+HCRedStates$PercentGO <- HateCrime_2ndA2$PercentGO
+
+# Formatting cleaned data set to be exported as CSV:
+write.csv(HCRedStates, file = "GitHub/HateCrime_RedStates.csv")
+
+# Final Analysis Question: 
+# Are presence of the Death Penalty, high percentage of gun ownership, 
+# 2nd Amendment-Friendly state laws, and Republican voter majorities 
+# ALL accurate predictors of low Hate Crime occurrences?
+
+# Analysis to use : Multiple Regression
+#  Testing Assumptions
+#    Normality of Continuous Variables
+#     1) Crimes Per Population Times 100k
+plotNormalHistogram(HCRedStates$CrimesPerPop100k)
+# Positively skewed - Not Normal. 
+#     2) Percentage of Gun Ownership
+plotNormalHistogram(HCRedStates$PercentGO)
+# Seems Normal - checking with Tukey's
+plotNormalHistogram(transformTukey(HCRedStates$PercentGO))
+# Relatively Normal, but Pop 100k variable still was not.
+
+# Proceed with Spearman's Rho Correlation Test.
+cor.test(HCRedStates$CrimesPerPop100k, HCRedStates$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.04416 indicates correlation is significant.
+# Rho Coefficient at -0.2858789 indicates weak negative correlation between
+# high percentage of gun ownership and occurrence of hate crimes. Still, it is
+# a valid correlation, and thus far confirms hypothesis.
+
+# Alternatively, if a Pearson's Test were to be run, the variables would have
+# to be transformed to Normal Distributions.
+# Transforming Variables:
+HCRedStates$Pop100kT <- transformTukey(HCRedStates$CrimesPerPop100k)
+HCRedStates$TPercentGO <- transformTukey(HCRedStates$PercentGO)
+
+# Proceed with Pearson's Correlation Test.
+cor.test(HCRedStates$Pop100kT, HCRedStates$TPercentGO, method="pearson", use = "complete.obs")
+# Results: p-value of 0.1492 indicates result is not significant, and may not
+# be accepted.
+# Proceed with Spearman's Rho from this point forward.
+
+# Assessing Correlations Between Red State Features
+
+RedTypes3 <- HCRedStates[, c(6,7,8,9,3)]
+View(RedTypes3)
+
+# Adding Blue State Variable for contrast
+RedTypes3$StateBlue <- NA
+RedTypes3$StateBlue[RedTypes3$StateRed == "1"] <- 0
+RedTypes3$StateBlue[RedTypes3$StateRed == "0"] <- 1
+
+chart.Correlation(RedTypes3, histogram=FALSE, method="spearman")
+# Chart shows all correlations are statistically significant with at least 1 * .
+
+# These results may also be presented in a Correlation Matrix Table.
+RedTypesTable3 <- cor(RedTypes3)
+View(RedTypesTable3)
+# Results:
+# Most importantly, Crimes Per Population Times 100k has a moderate negative
+# correlation coefficient with Red States at -0.3888047 ; and the complete
+# inverse with Blue States, a moderate positive correlation at 0.3888047 .
+# Also, the Red State variable has a strong positive correlation coefficient
+# with Death Penalty States at 0.7040986 ; and moderate positive correlation
+# coefficients with 2nd Amendment-Friendly States and Percentage of Gun
+# Ownership, at 0.6603713 and 0.5036238, respectively.
+# This shows that there is a significant correlative relationship among Red
+# States, Death Penalty States, 2nd Amendment-Friendly States, and High Gun
+# Ownership States - so much so, that they can be statistically considered
+# as a group.
+
+# Now, it must be assessed whether or not Red State attributes are accurate
+# predictors of lower hate crime occurrences.
+
+# Computing Multiple Linear Regression
+RedMultReg <- lm(CrimesPerPop100k ~ StateRed + State2A + PercentGO + DeathPen, data=HCRedStates)
+summary(RedMultReg)
+# Results: p-value at 0.03557 is significant.
+# Adjusted R-squared value is 0.1298 , which means independent variables as a 
+# group can explain 12.98% of the factors that contribute to occurrence of 
+# fewer hate crimes. Therefore, considering the totality of circumstances,
+# the independent variables and and fewer hate crime occurrences are fairly 
+# closely related.
+
+# The analysis can now be taken a step further, to see how Red State variables
+# are correlative with the types of hate crimes committed in each state.
+
+HateCrimeRed1 <- HateCrimeRed %>% group_by(State) %>% summarize(TotalCrimes = sum(TotalCrimes), TotalPop = sum(Population), TotalRace = sum(RaceEthnAnc), TotalRel = sum(Religion), TotalSxlOr = sum(SexualOrientation), TotalDisabl = sum(Disability), TotalGen = sum(Gender), TotalGenID = sum(GenderID))
+View(HateCrimeRed1)
+
+# Removing Federal data row
+
+HateCrimeRed1 <- HateCrimeRed1[-9,]
+
+# Adding additional variables
+
+HateCrimeRed1$CrimesPerPop100k <- NA
+HateCrimeRed1$CrimesPerPop100k <- HCRedStates$CrimesPerPop100k
+
+HateCrimeRed1$Population <- NA
+HateCrimeRed1$Population <- HCRedStates$Population
+
+HateCrimeRed1$DeathPen <- NA
+HateCrimeRed1$DeathPen <- HCRedStates$DeathPen
+
+HateCrimeRed1$State2A <- NA
+HateCrimeRed1$State2A <- HCRedStates$State2A
+
+HateCrimeRed1$PercentGO <- NA
+HateCrimeRed1$PercentGO <- HCRedStates$PercentGO
+
+HateCrimeRed1$StateRed <- NA
+HateCrimeRed1$StateRed <- HCRedStates$StateRed
+
+HateCrimeRed1$StateBlue <- NA
+HateCrimeRed1$StateBlue[HateCrimeRed1$StateRed == "1"] <- 0
+HateCrimeRed1$StateBlue[HateCrimeRed1$StateRed == "0"] <- 1
+
+HateCrimeRed1$RacePerPop100k <- (HateCrimeRed1$TotalRace / HateCrimeRed1$Population) * 100000
+
+HateCrimeRed1$RelPerPop100k <- (HateCrimeRed1$TotalRel / HateCrimeRed1$Population) * 100000
+
+HateCrimeRed1$SxlOrPerPop100k <- (HateCrimeRed1$TotalSxlOr / HateCrimeRed1$Population) * 100000
+
+HateCrimeRed1$DsablPerPop100k <- (HateCrimeRed1$TotalDisabl / HateCrimeRed1$Population) * 100000
+
+HateCrimeRed1$GenPerPop100k <- (HateCrimeRed1$TotalGen / HateCrimeRed1$Population) * 100000
+
+HateCrimeRed1$GenIDPerPop100k <- (HateCrimeRed1$TotalGenID / HateCrimeRed1$Population) * 100000
+
+
+# Correlation Test - Calculating Correlation Values
+
+#  First, testing Assumption of Normality on all continuous variables.
+
+plotNormalHistogram(HateCrimeRed1$TotalRace)
+# Total Race/Ethn/Ancestry variable is positively skewed - not Normal.
+plotNormalHistogram(HateCrimeRed1$RacePerPop100k)
+# Race Per Pop. 100,000 variable is also positively skewed - not Normal.
+# Correcting with Tukey's.
+plotNormalHistogram(transformTukey(HateCrimeRed1$RacePerPop100k))
+HateCrimeRed1$RacePerPop100kT <- transformTukey(HateCrimeRed1$RacePerPop100k)
+HateCrimeRed1$StateRedT <- transformTukey(HateCrimeRed1$StateRed)
+
+plotNormalHistogram(HateCrimeRed1$TotalRel)
+# Total Religion variable is also positively skewed - not Normal.
+plotNormalHistogram(HateCrimeRed1$RelPerPop100k)
+# Religion Per Pop. 100,000 variable is also positively skewed - not Normal.
+
+plotNormalHistogram(HateCrimeRed1$TotalSxlOr)
+# Total Sexual Orientation is also positively skewed - not Normal.
+plotNormalHistogram(HateCrimeRed1$SxlOrPerPop100k)
+# Sxl Or. Per Pop. 100,000 variable is also positively skewed - not Normal.
+
+plotNormalHistogram(HateCrimeRed1$TotalDisabl)
+# Total Disability is also positively skewed - not Normal.
+plotNormalHistogram(HateCrimeRed1$DsablPerPop100k)
+# Disability Per Pop. 100,000 variable is also positively skewed - not Normal.
+
+plotNormalHistogram(HateCrimeRed1$TotalGen)
+# Total Gender is also positively skewed - not Normal.
+plotNormalHistogram(HateCrimeRed1$GenPerPop100k)
+# Gender Per Pop. 100,000 variable is also positively skewed - not Normal.
+
+plotNormalHistogram(HateCrimeRed1$TotalGenID)
+# Total Gender ID is also positively skewed - not Normal.
+plotNormalHistogram(HateCrimeRed1$GenIDPerPop100k)
+# Gender ID Per Pop. 100,000 variable is also positively skewed - not Normal.
+
+#  Proceeding with Spearman's Rho Correlation Tests.
+#    Red State vs. Blue State Variables
+cor.test(HateCrimeRed1$CrimesPerPop100k, HateCrimeRed1$StateRed, method="spearman", use = "complete.obs")
+# Results: p-value of 0.0002299 indicates correlation is very significant.
+# Rho Coefficient at -0.498422 indicates moderate negative correlation between
+# Red states and total hate crime occurrences.
+cor.test(HateCrimeRed1$CrimesPerPop100k, HateCrimeRed1$StateBlue, method="spearman", use = "complete.obs")
+# Results: p-value of 0.0002299 indicates correlation is very significant.
+# Correlation with Blue States shows the exact inverse: 
+# Rho Coefficient at 0.498422 indicates moderate positive correlation between
+# Blue States and total hate crime occurrences. 
+
+cor.test(HateCrimeRed1$RacePerPop100k, HateCrimeRed1$StateRed, method="spearman", use = "complete.obs")
+# Results: p-value of 0.05699 indicates correlation is barely insignificant.
+# Rho Coefficient at -0.2709731 indicates a weak negative correlation between
+# Red states and Race/Ethnicity/Ancestry-motivated hate crime occurrences; 
+# however, result cannot be accepted due to p-value trivially exceeding 
+# the > .05 threshold. Still, it is worth noting that the 
+# Rho Coefficient is negative.
+
+cor.test(HateCrimeRed1$RacePerPop100k, HateCrimeRed1$StateBlue, method="spearman", use = "complete.obs")
+# Results: p-value of 0.05699 indicates correlation is very significant.
+# Correlation with Blue States shows the exact inverse: 
+# Rho Coefficient at 0.2709731 indicates a weak positive correlation between
+# Blue states and Race/Ethnicity/Ancestry-motivated hate crime occurrences; 
+# however, result cannot be accepted due to p-value trivially exceeding 
+# the > .05 threshold. Still, it is worth noting that the 
+# Rho Coefficient is positive.
+
+cor.test(HateCrimeRed1$RelPerPop100k, HateCrimeRed1$StateRed, method="spearman", use = "complete.obs")
+# Results: p-value of 6.248e-05 indicates correlation is extremely significant.
+# Rho Coefficient at -0.5350546 indicates moderate negative correlation between
+# Red states and Religion-motivated hate crime occurrences.
+cor.test(HateCrimeRed1$RelPerPop100k, HateCrimeRed1$StateBlue, method="spearman", use = "complete.obs")
+# Results: p-value of 6.248e-05 indicates correlation is extremely significant.
+# Correlation with Blue States shows the exact inverse:
+# Rho Coefficient at 0.5350546 indicates moderate positive correlation between
+# Blue states and Religion-motivated hate crime occurrences.
+
+cor.test(HateCrimeRed1$SxlOrPerPop100k, HateCrimeRed1$StateRed, method="spearman", use = "complete.obs")
+# Results: p-value of 4.799e-06 indicates correlation is extremely significant.
+# Rho Coefficient at -0.5967024 indicates moderate negative correlation between
+# Red states and Sexual Orientation-motivated hate crime occurrences.
+cor.test(HateCrimeRed1$SxlOrPerPop100k, HateCrimeRed1$StateBlue, method="spearman", use = "complete.obs")
+# Results: p-value of 4.799e-06 indicates correlation is extremely significant.
+# Correlation with Blue States shows the exact inverse:
+# Rho Coefficient at 0.5967024 indicates moderate positive correlation between
+# Blue states and Sexual Orientation-motivated hate crime occurrences.
+
+cor.test(HateCrimeRed1$DsablPerPop100k, HateCrimeRed1$StateRed, method="spearman", use = "complete.obs")
+# Results: p-value of 0.9298 indicates correlation is not significant.
+# Rho Coefficient at 0.07877916 indicates no correlation.
+cor.test(HateCrimeRed1$DsablPerPop100k, HateCrimeRed1$StateBlue, method="spearman", use = "complete.obs")
+# Results: p-value of 0.9298 indicates correlation is not significant.
+# Correlation with Blue States shows the exact inverse:
+# Rho Coefficient at -0.07877916 indicates no correlation.
+# It is worth noting that Disability-motivated hate crimes are the ONLY
+# variable that shows a positive correlation with Red States; however, the
+# p-value is not even close to the < .05 threshold, so these results cannot
+# be admitted due to extreme insignificance.
+
+cor.test(HateCrimeRed1$GenPerPop100k, HateCrimeRed1$StateRed, method="spearman", use = "complete.obs")
+# Results: p-value of 0.9742 indicates correlation is not significant.
+# Rho Coefficient at -0.004694408 indicates no correlation.
+cor.test(HateCrimeRed1$GenPerPop100k, HateCrimeRed1$StateBlue, method="spearman", use = "complete.obs")
+# Results: p-value of 0.9742 indicates correlation is not significant.
+# Correlation with Blue States shows the exact inverse:
+# Rho Coefficient at 0.004694408 indicates no correlation.
+
+cor.test(HateCrimeRed1$GenIDPerPop100k, HateCrimeRed1$StateRed, method="spearman", use = "complete.obs")
+# Results: p-value of 0.008341 indicates correlation is very significant.
+# Rho Coefficient at -0.3691238 indicates moderate negative correlation between
+# Red states and Gender Identification-motivated hate crime occurrences.
+cor.test(HateCrimeRed1$GenIDPerPop100k, HateCrimeRed1$StateBlue, method="spearman", use = "complete.obs")
+# Results: p-value of 0.008341 indicates correlation is very significant.
+# Correlation with Blue States shows the exact inverse:
+# Rho Coefficient at 0.3691238 indicates moderate negative correlation between
+# Red states and Gender Identification-motivated hate crime occurrences.
+
+#    2nd Amendment-Friendly Variable
+cor.test(HateCrimeRed1$CrimesPerPop100k, HateCrimeRed1$State2A, method="spearman", use = "complete.obs")
+# Results: p-value of 0.001336 indicates correlation is very significant.
+# Rho Coefficient at -0.4413305 indicates moderate negative correlation between
+# 2nd Amendment-Friendly states and total hate crime occurrences.
+
+cor.test(HateCrimeRed1$RacePerPop100k, HateCrimeRed1$State2A, method="spearman", use = "complete.obs")
+# Results: p-value of 0.2235 indicates correlation is not significant.
+# Rho Coefficient at -0.1752342 indicates a weak negative correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative. 
+
+cor.test(HateCrimeRed1$RelPerPop100k, HateCrimeRed1$State2A, method="spearman", use = "complete.obs")
+# Results: p-value of 0.001746 indicates correlation is very significant.
+# Rho Coefficient at -0.431699 indicates moderate negative correlation between
+# 2nd Amendment-Friendly states and Religion-motivated hate crime occurrences.
+
+
+cor.test(HateCrimeRed1$SxlOrPerPop100k, HateCrimeRed1$State2A, method="spearman", use = "complete.obs")
+# Results: p-value of 3.738e-05 indicates correlation is extremely significant.
+# Rho Coefficient at -0.5484181 indicates moderate negative correlation between
+# 2nd Amendment-Friendly states and Sxl.Or.-motivated hate crime occurrences.
+
+cor.test(HateCrimeRed1$DsablPerPop100k, HateCrimeRed1$State2A, method="spearman", use = "complete.obs")
+# Results: p-value of 0.2319 indicates correlation is not significant.
+# Rho Coefficient at 0.1721505 indicates a weak positive correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is the ONLY almost-positive correlation associated with
+# 2nd Amendment-Friendly States.
+
+cor.test(HateCrimeRed1$GenPerPop100k, HateCrimeRed1$State2A, method="spearman", use = "complete.obs")
+# Results: p-value of 0.516 indicates correlation is not significant.
+# Rho Coefficient at -0.09403492 indicates no correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative.
+
+cor.test(HateCrimeRed1$GenIDPerPop100k, HateCrimeRed1$State2A, method="spearman", use = "complete.obs")
+# Results: p-value of 0.3383 indicates correlation is not significant.
+# Rho Coefficient at -0.1382584 indicates a weak negative correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative.
+
+#    Gun Ownership Percentage Variable
+cor.test(HateCrimeRed1$CrimesPerPop100k, HateCrimeRed1$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.04416 indicates correlation is significant.
+# Rho Coefficient at -0.2858789 indicates a weak negative correlation between
+# state gun ownership and total hate crime occurrences. Still, it is worth
+# noting that although not the strongest or most significant correlation,
+# it is still negative.
+
+cor.test(HateCrimeRed1$RacePerPop100k, HateCrimeRed1$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.7131 indicates correlation is not significant.
+# Rho Coefficient at -0.05330516 indicates no correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative.
+
+cor.test(HateCrimeRed1$RelPerPop100k, HateCrimeRed1$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.000826 indicates correlation is very significant.
+# Rho Coefficient at -0.4579341 indicates moderate negative correlation between
+# state gun ownership and Religion-motivated hate crime occurrences.
+
+cor.test(HateCrimeRed1$SxlOrPerPop100k, HateCrimeRed1$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.02313 indicates correlation is significant.
+# Rho Coefficient at -0.3207914 indicates moderate negative correlation between
+# state gun ownership and Sxl.Orientation-motivated hate crime occurrences.
+
+cor.test(HateCrimeRed1$DsablPerPop100k, HateCrimeRed1$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.5134 indicates correlation is not significant.
+# Rho Coefficient at 0.09460375 indicates no correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is the ONLY almost-positive correlation associated with
+# state gun ownership.
+
+cor.test(HateCrimeRed1$GenPerPop100k, HateCrimeRed1$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.8036 indicates correlation is not significant.
+# Rho Coefficient at -0.03607422 indicates no correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative.
+
+cor.test(HateCrimeRed1$GenIDPerPop100k, HateCrimeRed1$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.265 indicates correlation is not significant.
+# Rho Coefficient at -0.1606885 indicates a weak negative correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative.
+
+#    Death Penalty Variable
+cor.test(HateCrimeRed1$CrimesPerPop100k, HateCrimeRed1$DeathPen, method="spearman", use = "complete.obs")
+# Results: p-value of 0.01549 indicates correlation is significant.
+# Rho Coefficient at -0.3406417 indicates a weak negative correlation between
+# Death Penalty States and total hate crime occurrences.
+
+cor.test(HateCrimeRed1$RacePerPop100k, HateCrimeRed1$DeathPen, method="spearman", use = "complete.obs")
+# Results: p-value of 0.2199 indicates correlation is not significant.
+# Rho Coefficient at -0.1765775 indicates a weak negative correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative. 
+
+cor.test(HateCrimeRed1$RelPerPop100k, HateCrimeRed1$DeathPen, method="spearman", use = "complete.obs")
+# Results: p-value of 0.01638 indicates correlation is significant.
+# Rho Coefficient at -0.3379421 indicates a weak negative correlation between
+# Death Penalty States and Religion-motivated hate crime occurrences.
+
+cor.test(HateCrimeRed1$SxlOrPerPop100k, HateCrimeRed1$DeathPen, method="spearman", use = "complete.obs")
+# Results: p-value of 0.0002463 indicates correlation is very significant.
+# Rho Coefficient at -0.4963636 indicates moderate negative correlation between
+# Death Penalty States and Sxl.Orientation-motivated hate crime occurrences.
+
+cor.test(HateCrimeRed1$DsablPerPop100k, HateCrimeRed1$DeathPen, method="spearman", use = "complete.obs")
+# Results: p-value of 0.3611 indicates correlation is not significant.
+# Rho Coefficient at 0.1319151 indicates weak positive correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is the ONLY positive correlation associated with
+# Death Penalty States.
+
+cor.test(HateCrimeRed1$GenPerPop100k, HateCrimeRed1$DeathPen, method="spearman", use = "complete.obs")
+# Results: p-value of 0.6152 indicates correlation is not significant.
+# Rho Coefficient at -0.07283167 indicates no correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative.
+
+cor.test(HateCrimeRed1$GenIDPerPop100k, HateCrimeRed1$DeathPen, method="spearman", use = "complete.obs")
+# Results: p-value of 0.08367 indicates correlation is not significant.
+# Rho Coefficient at -0.2470646 indicates a weak negative correlation.
+# Although correlation cannot be admitted due to insignificance, it is still
+# worth noting that it is negative.
+
+
+# Correlation Matrices - Assessing Different Types of Hate Crimes with 
+# Independent Variables
+RedTypes4 <- HateCrimeRed1[, c(10,17,18,19,20,21,22,12,13,11,14,15)]      
+View(RedTypes4)
+# Again, Spearman Method is used because many variables do not have 
+# a naturally-occurring Normal Distribution.
+chart.Correlation(RedTypes4, histogram=FALSE, method="spearman")
+# These results may also be presented in a Correlation Matrix Table.
+RedTypesTable4 <- cor(RedTypes4)
+View(RedTypesTable4)
+# Values shown in table are sufficiently in line with correlation test results.
+
+# Creating Correlation Matrix Plot
+corrplot(RedTypesTable4, type="lower", order="hclust", p.mat = RedTypesTable4, sig.level = 0.01, insig="blank")
+# Correlation Matrix Plot confirms all negative correlations among Hate Crime
+# Type Variables and Red State Attribute Variables (including Death Penalty,
+# 2nd Amendment-Friendly, and Gun Ownership Percentage).
+
+# Conclusion :
+# Assessing correlation matrices confirms initial hypothesis that the 
+# majority of hate crime occurrences, even when broken down by type, are 
+# significantly lower in Red States than Blue States.
+# This trend continues even when Red States are considered in by individual
+# variables of Death Penalty, 2nd Amendment-Friendly, and 
+# Gun Ownership Percentage.
+
+# Once again, these findings dramatically refute the common popular bias that 
+# Republican voters are more likely to show 'hateful' tendencies toward certain 
+# groups, and/or are more likely to commit hate crimes. 
+
+# Formatting cleaned data set to be exported as CSV:
+write.csv(HateCrimeRed1, file = "GitHub/HateCrime_RedStates01.csv")
+
+
+
+
+
+
+
+
