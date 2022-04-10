@@ -1,0 +1,471 @@
+library("dplyr")
+library("rcompanion")
+library("car")
+library("IDPmisc")
+library("ggplot2")
+library("PerformanceAnalytics")
+library("corrplot")
+library("readr")
+
+HateCrime01 <- read_csv("GitHub/HateCrimeNoNA.csv")
+View(HateCrime01)
+
+HateCrime01 <- HateCrime01[,-1:-2]
+HateCrime01 <- NaRV.omit(HateCrime01)
+
+HateCrime01$TotalCrimes <- HateCrime01$RaceEthnAnc + HateCrime01$Religion + HateCrime01$SexualOrientation + HateCrime01$Disability + HateCrime01$Gender + HateCrime01$GenderID
+
+HateCrime2A <- HateCrime01
+View(HateCrime2A)
+
+# Methodology:
+# Ranking based on results for "Gun Friendly Index" compiled by Rosenstein Law
+# Group. "Best States for Responsible Gun Owners". 2 February 2022.
+# Range from highest 122.9 (Alaska) - lowest 10.7 (New York) = 112.2 
+# 112.2 / 2 = 56.1
+# States ranking above 56.1 were assigned "1" value, states ranking below 56.1
+# were assigned "0" value.
+
+HateCrime2A$State2A <- NA
+HateCrime2A$State2A[HateCrime2A$State == "Alaska"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Arizona"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Arkansas"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Colorado"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Florida"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Georgia"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Idaho"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Illinois"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Indiana"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Iowa"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Kansas"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Kentucky"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Louisiana"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Michigan"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Minnesota"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Mississippi"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Missouri"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Montana"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Nebraska"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Nevada"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "New Hampshire"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "New Mexico"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "North Carolina"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "North Dakota"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Ohio"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Oklahoma"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Oregon"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Pennsylvania"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "South Carolina"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "South Dakota"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Tennessee"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Texas"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Utah"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Vermont"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Virginia"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "West Virginia"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Wisconsin"] <- 1
+HateCrime2A$State2A[HateCrime2A$State == "Wyoming"] <- 1
+
+HateCrime2A$State2A[HateCrime2A$State == "California"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "Connecticut"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "Delaware"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "District of Columbia"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "Hawaii"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "Maine"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "Maryland"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "Massachusetts"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "New York"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "New Jersey"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "Rhode Island"] <- 0
+HateCrime2A$State2A[HateCrime2A$State == "Washington"] <- 0
+
+HateCrime2A <- NaRV.omit(HateCrime2A)
+
+HC2ATotals <- HateCrime2A %>% group_by(State) %>% summarize(Totals = sum(TotalCrimes))
+View(HC2ATotals)
+
+HC2ATotals$State2A <- NA
+HC2ATotals$State2A[HC2ATotals$State == "Alaska"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Arizona"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Arkansas"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Colorado"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Florida"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Georgia"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Idaho"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Illinois"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Indiana"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Iowa"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Kansas"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Kentucky"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Louisiana"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Michigan"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Minnesota"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Mississippi"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Missouri"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Montana"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Nebraska"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Nevada"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "New Hampshire"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "New Mexico"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "North Carolina"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "North Dakota"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Ohio"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Oregon"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Oklahoma"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Pennsylvania"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "South Carolina"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "South Dakota"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Tennessee"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Texas"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Utah"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Vermont"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Virginia"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "West Virginia"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Wisconsin"] <- 1
+HC2ATotals$State2A[HC2ATotals$State == "Wyoming"] <- 1
+
+HC2ATotals$State2A[HC2ATotals$State == "California"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "Connecticut"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "Delaware"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "District of Columbia"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "Hawaii"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "Maine"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "Maryland"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "Massachusetts"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "New York"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "New Jersey"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "Rhode Island"] <- 0
+HC2ATotals$State2A[HC2ATotals$State == "Washington"] <- 0
+
+# Independent t-Test
+#  Test for Homogeneity of Variance
+bartlett.test(Totals ~ State2A, data = HC2ATotals)
+fligner.test(Totals ~ State2A, data = HC2ATotals)
+#  Did not meet assumption with either test. Must specify equal variance 
+#  argument as FALSE.
+
+# Welch Two Sample t-Test
+HC2A_ind <- t.test(HC2ATotals$Totals, HC2ATotals$State2A, alternative="two.sided", var.equal=FALSE)
+print(HC2A_ind)
+# p-value of 6.597e-06 is drastically < .05 , showing there is a significant
+# difference in hate crimes committed in 2nd Amendment-Friendly states as 
+# opposed to 2nd Amendment-Unfriendly states.
+
+# Analysis of Means:
+HC2A_means <- HC2ATotals %>% group_by(State2A) %>% summarize(Totals = mean(Totals))
+print(HC2A_means)
+
+# Results:
+# 2nd Amendment-Unfriendly States: Mean of 300 Hate Crimes committed in 2019.
+# 2nd Amendment-Friendly States: Mean of 99.2 Hate Crimes committed in 2019.
+# Analysis of Means shows there are nearly three times as many hate crimes 
+# committed in 2nd Amendment-Unfriendly states as opposed to 
+# 2nd Amendment-Friendly states in 2019.
+
+# In order for the analysis to be fair, however, population proportion must be 
+# added as a variable.
+
+HC2APop <- (HateCrime2A %>% group_by(State) %>% summarize(Population = sum(Population)))
+View(HC2APop)
+
+HC2ATotals$Population <- NA
+HC2ATotals$Population <- HC2APop$Population
+
+HC2ATotals$CrimesPerPop <- HC2ATotals$Totals / HC2ATotals$Population
+
+# The 'Crimes per Population' variable must be formatted to 
+# 'Crimes per Population times 100,000' to make the number more manageable.
+
+HC2ATotals$CrimesPerPop100k <- HC2ATotals$CrimesPerPop * 100000
+
+# Analysis : Independent t-Test
+#  Testing Assumptions
+#  Test for Homogeneity of Variance
+bartlett.test(CrimesPerPop100k ~ State2A, data = HC2ATotals)
+fligner.test(CrimesPerPop100k ~ State2A, data = HC2ATotals)
+#  Met assumption for Fligner's Test with p-value at 0.4696 .
+
+HC2A_ind2 <- t.test(HC2ATotals$CrimesPerPop100k, HC2ATotals$State2A, alternative="two.sided", var.equal=TRUE)
+print(HC2A_ind2)
+# p-value at p-value = 2.97e-10 is drastically < .05 , showing a strongly 
+# significant difference in hate crimes committed in 2nd Amendment-Friendly 
+# states in 2019 as opposed to 2nd Amendment-Unfriendly, even when adjusted for 
+# population.
+
+# Analysis of Means:
+HC2A_means2 <- HC2ATotals %>% group_by(State2A) %>% summarize(Totals = mean(CrimesPerPop100k))
+print(HC2A_means2)
+# Results:
+# 2ndA-Unfriendly States: Mean of 7.97 Hate Crimes per Population times 100000.
+# 2ndA-Friendly States: Mean of 3.97 Hate Crimes per Population times 100000.
+# Analysis of Means shows there are nearly twice as many hate crimes committed
+# in 2ndA-Unfriendly states as opposed to 2ndA-Friendly states, even when 
+# adjusted for population.
+
+# The evidence is overwhelming. 2nd Amendment-Friendly states have dramatically
+# lower crime rates. This could possibly account for the high correlation 
+# between Death Penalty states and low crime rates as well.
+
+# Formatting cleaned data set to be exported as CSV:
+write.csv(HC2ATotals, file = "GitHub/HateCrime_2ndAmendment.csv")
+
+# Another Question : Is occurrence of Hate Crimes impacted by number of actual
+# gun owners?
+# Does a state's 2ndA-Friendly gun policy actually make residents more likely
+# to own guns?
+
+HC2A_GO <- HC2ATotals 
+View(HC2A_GO)
+
+HC2A_GO$PercentGO <- NA
+HC2A_GO$PercentGO[HC2A_GO$State == "Alaska"] <- 61.7
+HC2A_GO$PercentGO[HC2A_GO$State == "Arizona"] <- 32.3
+HC2A_GO$PercentGO[HC2A_GO$State == "Arkansas"] <- 57.9
+HC2A_GO$PercentGO[HC2A_GO$State == "California"] <- 20.1
+HC2A_GO$PercentGO[HC2A_GO$State == "Colorado"] <- 34.3
+HC2A_GO$PercentGO[HC2A_GO$State == "Connecticut"] <- 16.6
+HC2A_GO$PercentGO[HC2A_GO$State == "Delaware"] <- 5.2
+HC2A_GO$PercentGO[HC2A_GO$State == "District of Columbia"] <- 25.9
+HC2A_GO$PercentGO[HC2A_GO$State == "Florida"] <- 32.5
+HC2A_GO$PercentGO[HC2A_GO$State == "Georgia"] <- 31.6
+HC2A_GO$PercentGO[HC2A_GO$State == "Hawaii"] <- 45.1
+HC2A_GO$PercentGO[HC2A_GO$State == "Idaho"] <- 56.9
+HC2A_GO$PercentGO[HC2A_GO$State == "Illinois"] <- 26.2
+HC2A_GO$PercentGO[HC2A_GO$State == "Indiana"] <- 33.8
+HC2A_GO$PercentGO[HC2A_GO$State == "Iowa"] <- 33.8
+HC2A_GO$PercentGO[HC2A_GO$State == "Kansas"] <- 32.2
+HC2A_GO$PercentGO[HC2A_GO$State == "Kentucky"] <- 42.4
+HC2A_GO$PercentGO[HC2A_GO$State == "Louisiana"] <- 44.5
+HC2A_GO$PercentGO[HC2A_GO$State == "Maine"] <- 22.6
+HC2A_GO$PercentGO[HC2A_GO$State == "Maryland"] <- 20.7
+HC2A_GO$PercentGO[HC2A_GO$State == "Massachusetts"] <- 22.6
+HC2A_GO$PercentGO[HC2A_GO$State == "Michigan"] <- 28.8
+HC2A_GO$PercentGO[HC2A_GO$State == "Minnesota"] <- 36.7
+HC2A_GO$PercentGO[HC2A_GO$State == "Mississippi"] <- 42.8
+HC2A_GO$PercentGO[HC2A_GO$State == "Missouri"] <- 27.1
+HC2A_GO$PercentGO[HC2A_GO$State == "Montana"] <- 52.3
+HC2A_GO$PercentGO[HC2A_GO$State == "Nebraska"] <- 19.8
+HC2A_GO$PercentGO[HC2A_GO$State == "Nevada"] <- 37.5
+HC2A_GO$PercentGO[HC2A_GO$State == "New Hampshire"] <- 14.4
+HC2A_GO$PercentGO[HC2A_GO$State == "New Jersey"] <- 11.3
+HC2A_GO$PercentGO[HC2A_GO$State == "New Mexico"] <- 49.9
+HC2A_GO$PercentGO[HC2A_GO$State == "New York"] <- 10.3
+HC2A_GO$PercentGO[HC2A_GO$State == "North Carolina"] <- 28.7
+HC2A_GO$PercentGO[HC2A_GO$State == "North Dakota"] <- 47.9
+HC2A_GO$PercentGO[HC2A_GO$State == "Ohio"] <- 19.6
+HC2A_GO$PercentGO[HC2A_GO$State == "Oklahoma"] <- 31.2
+HC2A_GO$PercentGO[HC2A_GO$State == "Oregon"] <- 26.6
+HC2A_GO$PercentGO[HC2A_GO$State == "Pennsylvania"] <- 21.7
+HC2A_GO$PercentGO[HC2A_GO$State == "Rhode Island"] <- 5.8
+HC2A_GO$PercentGO[HC2A_GO$State == "South Carolina"] <- 44.4
+HC2A_GO$PercentGO[HC2A_GO$State == "South Dakota"] <- 35.0
+HC2A_GO$PercentGO[HC2A_GO$State == "Tennessee"] <- 39.4
+HC2A_GO$PercentGO[HC2A_GO$State == "Texas"] <- 35.7
+HC2A_GO$PercentGO[HC2A_GO$State == "Utah"] <- 31.9
+HC2A_GO$PercentGO[HC2A_GO$State == "Vermont"] <- 28.8
+HC2A_GO$PercentGO[HC2A_GO$State == "Virginia"] <- 29.3
+HC2A_GO$PercentGO[HC2A_GO$State == "Washington"] <- 27.7
+HC2A_GO$PercentGO[HC2A_GO$State == "West Virginia"] <- 54.2
+HC2A_GO$PercentGO[HC2A_GO$State == "Wisconsin"] <- 34.7
+HC2A_GO$PercentGO[HC2A_GO$State == "Wyoming"] <- 53.8
+
+# Analysis : Simple Linear Regression
+HC2Aplot <- ggplot(HC2A_GO, aes(x = PercentGO, y = CrimesPerPop100k)) + geom_point() + geom_smooth(method=lm)
+show(HC2Aplot)
+
+# Initial scatter plot shows a slight negative correlation between 
+# increased gun ownership and increased total hate crimes.
+
+# Correlation Test - Calculating Correlation Values
+#  First, test Assumption of Normality on both continuous variables.
+#   1) Percentage of Gun Ownership
+plotNormalHistogram(HC2A_GO$PercentGO)
+# Gun Ownership variable appears Normal.
+#   2) Hate Crimes per Population times 100000
+plotNormalHistogram(HC2A_GO$CrimesPerPop100k)
+# CrimesPerPop100k variable is moderately positively skewed - not Normal.
+# Proceed with Spearman's Rho Correlation Test for Non-Normal data.
+cor.test(HC2A_GO$CrimesPerPop100k, HC2A_GO$PercentGO, method="spearman", use = "complete.obs")
+# Results: p-value of 0.04416 indicates correlation is significant.
+# Rho Coefficient at -0.2858789 indicates weak negative correlation.
+
+# Alternatively, if a Pearson's Test were to be run, the variables would have
+# to be transformed to Normal Distributions.
+#   1) Percentage of Gun Ownership
+plotNormalHistogram(HC2A_GO$PercentGO)
+# Seems Normal, checking with Tukey's.
+plotNormalHistogram(transformTukey(HC2A_GO$PercentGO))
+# Tukey's shows most Normal Distribution - creating transformed variable.
+HC2A_GO$PercentGO_T <- (transformTukey(HC2A_GO$PercentGO))
+#   2) Hate Crimes per Population times 100000
+plotNormalHistogram(HC2A_GO$CrimesPerPop100k)
+# Moderately positively skewed variable must be transformed.
+plotNormalHistogram(sqrt(HC2A_GO$CrimesPerPop100k))
+plotNormalHistogram(log(HC2A_GO$CrimesPerPop100k))
+plotNormalHistogram(transformTukey(HC2A_GO$CrimesPerPop100k))
+# Tukey's shows most Normal Distribution - creating transformed variable.
+HC2A_GO$CrimesPerPop100kT <- (transformTukey(HC2A_GO$CrimesPerPop100k))
+cor.test(HC2A_GO$CrimesPerPop100k, HC2A_GO$PercentGO, method="pearson", use = "complete.obs")
+# Results: p-value of 0.1848 indicates correlation is not significant.
+# Rho Coefficient at -0.1906577 indicates weak positive correlation.
+# Because p-value is insignificant, however, p-value must be discounted. 
+
+# Correlation Matrices - Assessing 2ndA-Friendly states and Percentage
+# of Gun Owners Against Total Hate Crimes per Population times 100000
+HC2A_matrix <- HC2A_GO[, c(3,7,6)]
+View(HC2A_matrix)
+# Again, Spearman Method is used because the Population variable does not have 
+# a naturally-occurring Normal Distribution.
+chart.Correlation(HC2A_matrix, histogram=FALSE, method="spearman")
+# These results may also be presented in a Correlation Matrix Table.
+HC2A_table <- cor(HC2A_matrix)
+View(HC2A_table)
+# Results:
+# 2ndA-Friendly states show a moderate positive correlation coefficient of  
+# 0.5502878 with percentage of people who own guns, which is frankly not 
+# surprising.
+# There is a moderate negative correlation coefficient of -0.4124950 between
+# 2ndA-Friendly states and occurrence of hate crimes. 
+# There is a weak negative correlation coefficient of -0.1906577 between
+# high gun ownership rates and occurrence of hate crimes, but it is still a
+# valid correlation.
+
+# Computing Linear Regression
+HCLinReg2A <- lm(CrimesPerPop100k ~ PercentGO, HC2A_GO)
+print(HCLinReg2A)
+# In this case, y = -0.05926x + 6.85607
+# Summarizing Calculation:
+summary(HCLinReg2A)
+# Results: p-value at 0.1848 is not statistically significant.
+# Adjusted R-squared value is 0.01627 , which means Percentage of Gun Owners 
+# can explain 1.627% of factors that contribute to occurrence of hate crimes. 
+# Therefore, actual percentage of gun owners and hate crime occurrences are 
+# not closely related.
+
+# Conclusion : In the eyes of a potential hate crime perpetrator, it does not 
+# matter how many people are ACTUALLY armed. Instead, it is the POSSIBILITY 
+# that people COULD BE armed that might deter potential hate crime perpetrators
+# from attacking them.
+
+# Formatting cleaned data set to be exported as CSV:
+write.csv(HC2A_GO, file = "GitHub/HateCrime_2ndA2.csv")
+
+HCRedStates2 <- HC2A_GO
+View(HCRedStates2)
+
+# Adding Death Penalty Categorical Variable
+HCRedStates2$DeathPen <- NA
+HCRedStates2$DeathPen[HCRedStates2$State == "Arizona"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Arkansas"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Florida"] <- 1  
+HCRedStates2$DeathPen[HCRedStates2$State == "Georgia"] <- 1 
+HCRedStates2$DeathPen[HCRedStates2$State == "Idaho"] <- 1 
+HCRedStates2$DeathPen[HCRedStates2$State == "Indiana"] <- 1 
+HCRedStates2$DeathPen[HCRedStates2$State == "Kansas"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Kentucky"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Louisiana"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Mississippi"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Missouri"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Montana"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Nebraska"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Nevada"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "North Carolina"] <- 1 
+HCRedStates2$DeathPen[HCRedStates2$State == "Ohio"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Oklahoma"] <- 1 
+HCRedStates2$DeathPen[HCRedStates2$State == "South Carolina"] <- 1 
+HCRedStates2$DeathPen[HCRedStates2$State == "South Dakota"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Tennessee"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Texas"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Utah"] <- 1
+HCRedStates2$DeathPen[HCRedStates2$State == "Wyoming"] <- 1
+
+HCRedStates2$DeathPen[HCRedStates2$State == "Delaware"] <- 0 
+HCRedStates2$DeathPen[HCRedStates2$State == "New Mexico"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "New York"] <- 0 
+HCRedStates2$DeathPen[HCRedStates2$State == "Rhode Island"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Alaska"] <- 0 
+HCRedStates2$DeathPen[HCRedStates2$State == "Colorado"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Connecticut"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Hawaii"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Illinois"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Iowa"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Maine"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Maryland"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Massachusetts"] <- 0 
+HCRedStates2$DeathPen[HCRedStates2$State == "Michigan"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Minnesota"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "New Hampshire"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "New Jersey"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "North Dakota"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Rhode Island"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Vermont"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Virginia"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Washington"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "West Virginia"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Wisconsin"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "California"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Oregon"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "Pennsylvania"] <- 0
+HCRedStates2$DeathPen[HCRedStates2$State == "District of Columbia"] <- 0
+
+# Adding Blue State Categorical Variable
+HCRedStates2$StateBlue <- NA
+HCRedStates2$StateBlue[HCRedStates2$State == "Alaska"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Arizona"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Arkansas"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Florida"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Georgia"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Idaho"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Indiana"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Iowa"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Kansas"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Kentucky"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Louisiana"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Michigan"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Mississippi"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Missouri"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Montana"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Nebraska"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "North Carolina"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "North Dakota"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Ohio"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Oklahoma"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Pennsylvania"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "South Carolina"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "South Dakota"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Tennessee"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Texas"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Utah"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "West Virginia"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Wisconsin"] <- 0
+HCRedStates2$StateBlue[HCRedStates2$State == "Wyoming"] <- 0
+
+HCRedStates2$StateBlue[HCRedStates2$State == "California"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Colorado"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Connecticut"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Delaware"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "District of Columbia"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Hawaii"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Illinois"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Maine"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Maryland"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Massachusetts"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Minnesota"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Nevada"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "New Hampshire"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "New Jersey"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "New Mexico"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "New York"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Oregon"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Rhode Island"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Vermont"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Virginia"] <- 1
+HCRedStates2$StateBlue[HCRedStates2$State == "Washington"] <- 1
+
+# Adding Red State Categorical Variable
+HCRedStates2$StateRed <- NA
+HCRedStates2$StateRed[HCRedStates2$StateBlue == "1"] <- 0
+HCRedStates2$StateRed[HCRedStates2$StateBlue == "0"] <- 1
+
+# Formatting cleaned data set to be exported as CSV:
+write.csv(HCRedStates2, file = "GitHub/HateCrime_RedStates2.csv")
