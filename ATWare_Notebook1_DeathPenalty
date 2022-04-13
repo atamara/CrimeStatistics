@@ -101,8 +101,8 @@ print(HCTotals0001)
 # in Non-Death Penalty/Moratorium-Imposed states as opposed to Death Penalty 
 # states in 2019.
 
-# In order for the analysis to be fair, however, population must be added as
-# a variable.
+# In order for the analysis to be fair, however, population proportion must be 
+# added as a variable.
 
 HCPop01 <- (na.omit(HateCrime01 %>% group_by(State) %>% summarize(Population = sum(Population))))
 View(HCPop01)
