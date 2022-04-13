@@ -187,7 +187,7 @@ fligner.test(CrimesPerPop100k ~ State2A, data = HC2ATotals)
 
 HC2A_ind2 <- t.test(HC2ATotals$CrimesPerPop100k, HC2ATotals$State2A, alternative="two.sided", var.equal=TRUE)
 print(HC2A_ind2)
-# p-value at p-value = 2.97e-10 is drastically < .05 , showing a strongly 
+# p-value at 2.97e-10 is drastically < .05 , showing a strongly 
 # significant difference in hate crimes committed in 2nd Amendment-Friendly 
 # states in 2019 as opposed to 2nd Amendment-Unfriendly, even when adjusted for 
 # population.
