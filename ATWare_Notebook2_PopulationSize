@@ -24,7 +24,7 @@ HateCrime02 <- NaRV.omit(HateCrime02)
 HCplot01 <- ggplot(HateCrime02, aes(x = Population, y = TotalCrimes)) + geom_point() + geom_smooth(method=lm)
 show(HCplot01)
 
-# Initial scatter plot shows an extremely high correlation between 
+# Initial scatter plot shows an extremely high positive correlation between 
 # increased population and increased total hate crimes.
 
 # Correlation Test - Calculating Correlation Values
@@ -87,7 +87,7 @@ print(HCLinReg0)
 # Summarizing Calculation:
 summary(HCLinReg0)
 # Results: p-value at < 2.2e-16 shows extremely high significance.
-# Adjusted R-squared value is 0.0.5801 , which means Population can explain  
+# Adjusted R-squared value is 0.5801 , which means Population can explain  
 # 58.01% of the factors that contribute to occurrence of hate crimes. Therefore,
 # population and hate crime occurrence are fairly closely related.
 
